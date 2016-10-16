@@ -1,0 +1,75 @@
+﻿<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.0/knockout-min.js"></script>
+
+
+<div class="container">
+    <h2>Refresh Rate</h2>
+    <p>Please select a refresh rate (seconds) for the light sensor..</p>
+    <label class="radio-inline disabled"><input type="radio" name="optradio">5 Seconds</label>
+    <label class="radio-inline disabled"><input type="radio" name="optradio">10 Seconds</label>
+    <label class="radio-inline"><input type="radio" name="optradio">15 Seconds</label>
+    <p data-bind="text: myValue"></p>
+    <p data-bind="text: myComputedValue"></p>
+</div>
+
+<script>
+    //This has to be an object in order to be able to call it
+    var myViewModel;
+    var myTimer;
+
+    $(document).ready(function () {
+        console.log("ready!");
+        myViewModel = new ViewModel();              //create the ViewModel
+        ko.applyBindings(myViewModel);              //bind it
+        myTimer = window.setInterval(getStatus, 2000);        //get status running;  you can use window.clearInterval(myTimer) to cancel the interval timer when switching from 5 to 10 seconds, etc.
+    });
+
+    //this is a proxy for calling the sensors
+    function getStatus() {
+        myViewModel.myValue(GetData());             //this is how you get everything to update
+    };
+
+
+    //you'll also have to hook up the radio buttons so you know how long the timer should be for -- add a value fo how many seconds they've picked;  there are several examples out there
+    //remember that this stores all the data that is bound
+    var ViewModel = function () {
+        var self = this;
+        self.myValue = ko.observable("sleeping...");                    //initial value can be whatever you want
+        self.myComputedValue = ko.computed(function () {                       //this is just an example of using computed values.  You might use it to calculate data for a graph or something
+            var result = "Photoresistor : " + UpdateSensor(self.myValue())   //just making something unique
+            return result;
+        }, self);
+    };
+
+    function GetData() {                                //my proxy for the senson data
+        var d = new Date();
+        var h = d.getHours();
+        var m = d.getMinutes();
+        var s = d.getSeconds();
+        h = (h < 10) ? "0" + h : h;
+        m = (m < 10) ? "0" + m : m;
+        s = (s < 10) ? "0" + s : s;
+        return (h + ":" + m + ":" + s);
+    };
+
+    function UpdateSensor(myValue) {                    //just some string manipulation
+        var result;
+        /*$.getJSON("http://nodewebapi64.azurewebsites.net/api/Garage/light")
+        .done(function (data) {
+            console.log(data);
+            return data;
+        });*/
+        var query = $.get("http://nodewebapi64.azurewebsites.net/api/Garage/light", function (data) {
+            console.log("Connected to API.");
+        })
+        .done(function (data) {
+            console.log("Sent data to computed value...");
+            console.log(data);
+            result = data;
+            return "Photoresistor:" + data + "at" + myValue;
+        })
+        return result;
+    };
+
+</script>
