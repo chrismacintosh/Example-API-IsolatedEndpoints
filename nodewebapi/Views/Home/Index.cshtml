@@ -4,13 +4,13 @@
 
 
 <div class="container">
-    <h2>Refresh Rate</h2>
-    <p>Please select a refresh rate (seconds) for the light sensor..</p>
-    <label class="radio-inline disabled"><input type="radio" name="optradio">5 Seconds</label>
-    <label class="radio-inline disabled"><input type="radio" name="optradio">10 Seconds</label>
-    <label class="radio-inline"><input type="radio" name="optradio">15 Seconds</label>
-    <p data-bind="text: myValue"></p>
-    <p data-bind="text: myComputedValue"></p>
+    <h2>Loading Live Sensor Values from an Arduino with Knockout.js</h2>
+    <h3>The following is an example of using Knockout.js to update sensor values with data being retrieved from API calls.</h3>
+
+    <h4>Knockout needs something to be changing at an interval to correctly be able to update other data. The purpose of the timestamp below is to provide a constant update, upon which case an API call updates the value for the sensors.</h4>
+    
+    <h5>Time: <p data-bind="text: myValue"></p></h5>
+    <p data-bind="text: mySensorReading"></p>
 </div>
 
 <script>
@@ -27,19 +27,15 @@
 
     //this is a proxy for calling the sensors
     function getStatus() {
-        myViewModel.myValue(GetData());             //this is how you get everything to update
+        myViewModel.myValue(GetData());                     //Set the current time
+        myViewModel.mySensorReading(UpdateSensor());        //Get the current sensor reading
     };
 
-
-    //you'll also have to hook up the radio buttons so you know how long the timer should be for -- add a value fo how many seconds they've picked;  there are several examples out there
     //remember that this stores all the data that is bound
     var ViewModel = function () {
         var self = this;
-        self.myValue = ko.observable("sleeping...");                    //initial value can be whatever you want
-        self.myComputedValue = ko.computed(function () {                       //this is just an example of using computed values.  You might use it to calculate data for a graph or something
-            var result = "Photoresistor : " + UpdateSensor(self.myValue)   //just making something unique
-            return result;
-        }, self);
+        self.myValue = ko.observable("Starting...");
+        self.mySensorReading = ko.observable(0);
     };
 
     function GetData() {                                //my proxy for the senson data
@@ -53,23 +49,51 @@
         return (h + ":" + m + ":" + s);
     };
 
-    function UpdateSensor(myValue) {
+    var fakeout = 0;
+    function UpdateSensor() {
+        var self = this;
         var result;
-        //if api call is going to return a JSON string, uncomment this
-        /*$.getJSON("http://nodewebapi64.azurewebsites.net/api/Garage/light")
-        .done(function (data) {
-            console.log(data);
-            return data;
-        });*/
-        var query = $.get("http://nodewebapi64.azurewebsites.net/api/Garage/light", function (data) {
+        var sensor;
+        var result2;
+        var sensor2;
+        var result3;
+        var sensor3;
+        $.get("http://localhost:57578/api/Garage/light", function (data) {
             console.log("Connected to API.");
+            console.log(data);
+            self.sensor = data.sensor;
+            self.result = data.value; //don’t think this is necessary at all – it just duplicates .done
         })
         .done(function (data) {
             console.log("Sent data to computed value...");
             console.log(data);
-            result = data;
-            return "Photoresistor:" + data + "at" + myValue; //Ok, let's try to return it here
+            self.result = data.value;
+            self.sensor = data.sensor;
+        });
+        $.get("http://localhost:57578/api/Garage/temp", function (data) {
+            console.log("Connected to API.");
+            console.log(data);
+            self.sensor2 = data.sensor;
+            self.result2 = data.value; //don’t think this is necessary at all – it just duplicates .done
         })
-        return result; //If not, this should return something.
+       .done(function (data) {
+           console.log("Sent data to computed value...");
+           console.log(data);
+           self.result2 = data.value;
+           self.sensor2 = data.sensor;
+       });
+        $.get("http://localhost:57578/api/Garage/humidity", function (data) {
+            console.log("Connected to API.");
+            console.log(data);
+            self.sensor3 = data.sensor;
+            self.result3 = data.value; //don’t think this is necessary at all – it just duplicates .done
+        })
+      .done(function (data) {
+          console.log("Sent data to computed value...");
+          console.log(data);
+          self.result3 = data.value;
+          self.sensor3 = data.sensor;
+      });
+        return self.sensor +" "+ self.result + " / " + self.sensor2 + " " + self.result2 + self.sensor3 + " " + self.result3; //If not, this should return something.
     };
 </script>

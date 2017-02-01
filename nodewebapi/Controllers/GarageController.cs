@@ -24,7 +24,7 @@ namespace nodewebapi.Controllers
             {
                 using (client)
                 {
-                    string httpget = client.DownloadString("http://192.168.1.11/temp");
+                    string httpget = client.DownloadString("http://10.0.10.22/temp");
                     sensor = JsonConvert.DeserializeObject<Garage>(httpget);
                 }
             }
@@ -32,24 +32,24 @@ namespace nodewebapi.Controllers
             {
                 //firewall is up, so if you're reading this, yes, right now this is generating a random number. If you want to test the C++ code, I can let you VPN into my network.
                 //otherwise, i've tested all the API calls in this class and they all function as expected, returning a json string.
+                /*
                 Random random = new Random();
                 int ran = random.Next(1, 1025);
                 return Ok(ran);
+                */
 
-                /*
                 using (client)
                 {
-                    string httpget = client.DownloadString("http://192.168.1.11/photoresistor");
+                    string httpget = client.DownloadString("http://10.0.10.22/photoresistor");
                     sensor = JsonConvert.DeserializeObject<Garage>(httpget);
                 }
-                */
 
             }
             else if(id == "humidity" || id == "humiture" || id == "hum")
             {
                 using (client)
                 {
-                    string httpget = client.DownloadString("http://192.168.1.11/humidity");
+                    string httpget = client.DownloadString("http://10.0.10.22/humidity");
                     sensor = JsonConvert.DeserializeObject<Garage>(httpget);
                 }
             }
